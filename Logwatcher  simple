@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# LogWatcher - Simple version
+# Author: Vladyslav Plakhov
+# GitHub: https://github.com/skwidstone/log-watcher
+
+# This script monitors a specified log file in real-time and highlights suspicious keywords.
+
+LOG_FILE="/var/log/syslog"  # Change this path to the log you want to monitor.
+
+# Define suspicious keywords
+declare -a KEYWORDS=("error" "fail" "denied" "unauthorized" "critical")
+
+if [[ ! -f "$LOG_FILE" ]]; then
+    echo "Log file $LOG_FILE does not exist!"
+    exit 1
+fi
+
+echo "Starting LogWatcher... Monitoring: $LOG_FILE"
+
+# Start tailing the log file
+tail -Fn0 "$LOG_FILE" | while read line; do
+    for keyword in "${KEYWORDS[@]}"; do
+        if echo "$line" | grep -i "$keyword" > /dev/null; then
+            echo "[SUSPICIOUS] $(date): $line"
+            break
+        fi
+    done
+done
